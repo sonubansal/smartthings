@@ -24,6 +24,10 @@ metadata {
 
 	// UI tile definitions
 	tiles {
+		standardTile("button", "device.switch", width: 2, height: 2, canChangeIcon: true) {
+			state "off", label: 'Off', action: "switch.on", icon: "st.switches.switch.off", backgroundColor: "#ffffff", nextState: "lighton"
+			state "on", label: 'On', action: "switch.off", icon: "st.switches.switch.on", backgroundColor: "#00A0DC", nextState: "lightoff"
+		}
 		standardTile("button", "device.alarm", width: 2, height: 2, canChangeIcon: true) {
 			state "off", label: 'Off', action: "switch.on", icon: "st.alarm.beep.beep", backgroundColor: "#ffffff", nextState: "on"
 			state "on", label: 'On', action: "switch.off", icon: "st.alarm.beep.beep", backgroundColor: "#00A0DC", nextState: "off"
@@ -134,6 +138,58 @@ def off() {
     def paramsforPut = [
     	uri: "https://api.ring.com",
     	path: "/clients_api/doorbots/${deviceid}/siren_off",
+        query: [
+        	api_version: "9",
+            "auth_token": token
+    	]
+	]
+    try {
+        httpPut(paramsforPut) { resp ->
+            //log.debug "PUT response code: ${resp.status}"
+        }
+    } catch (e) {
+        //ALWAYS seems to throw an exception?
+        //Platform bug maybe? 
+        log.debug "HTTP Exception Received on PUT: $e"
+    }
+	log.debug "Switched OFF!"
+    sendEvent(name: "switch", value: "off")
+}
+
+
+def lighton() {
+	
+    log.debug "Attempting to Switch On."
+    def token = authenticate()
+    //Send Command to Turn On
+    def paramsforPut = [
+    	uri: "https://api.ring.com",
+    	path: "/clients_api/doorbots/${deviceid}/floodlight_light_on",
+        query: [
+        	api_version: "9",
+            "auth_token": token
+    	]
+	]
+    try {
+        httpPut(paramsforPut) { resp ->
+        }
+    } catch (e) {
+        //ALWAYS seems to throw an exception?
+        //Platform bug maybe? 
+        log.debug "HTTP Exception Received on PUT: $e"
+    }
+    sendEvent(name: "switch", value: "on")
+}
+
+def lightoff() {
+
+    log.debug "Attempting to Switch Off"
+    def token = authenticate()
+    
+    //Send Command to Turn Off
+    def paramsforPut = [
+    	uri: "https://api.ring.com",
+    	path: "/clients_api/doorbots/${deviceid}/floodlight_light_off",
         query: [
         	api_version: "9",
             "auth_token": token
